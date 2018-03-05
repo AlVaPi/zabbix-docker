@@ -835,6 +835,7 @@ prepare_server() {
     create_db_schema_$db_type "server"
 
     update_zbx_config "server" "$db_type"
+
 }
 
 prepare_proxy() {

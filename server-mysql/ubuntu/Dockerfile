@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM ubuntu:trusty
 LABEL maintainer "AlVaPi"
 
 ARG BUILD_DATE
@@ -8,7 +8,7 @@ ARG APT_FLAGS_COMMON="-qq -y"
 ARG APT_FLAGS_PERSISTANT="${APT_FLAGS_COMMON} --no-install-recommends"
 ARG APT_FLAGS_DEV="${APT_FLAGS_COMMON} --no-install-recommends"
 ARG DB_TYPE=mysql
-ENV LANG=ru_RU.UTF-8 LANGUAGE=ru_RU:ru LC_ALL=ru_RU.UTF-8 DEBIAN_FRONTEND=noninteractive TERM=xterm \
+ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8 DEBIAN_FRONTEND=noninteractive TERM=xterm \
     MIBDIRS=/var/lib/mibs/iana:/var/lib/mibs/ietf:/usr/share/snmp/mibs:/var/lib/zabbix/mibs MIBS=+ALL
 
 LABEL org.label-schema.name="zabbix-proxy-${DB_TYPE}-ubuntu" \
@@ -64,9 +64,12 @@ RUN locale-gen $LC_ALL && \
             mysql-client \
             snmp-mibs-downloader \
             supervisor \
+	    php5-cli \
+	    php5-curl \
+	    php5-json \
+	    ssmtp \
+	    sendxmpp \
             unixodbc 1>/dev/null && \
-            php-cli \
-            sendxmpp \
     apt-get ${APT_FLAGS_COMMON} autoremove && \
     apt-get ${APT_FLAGS_COMMON} clean && \
     rm -rf /var/lib/apt/lists/*
@@ -170,9 +173,13 @@ WORKDIR /var/lib/zabbix
 
 VOLUME ["/usr/lib/zabbix/alertscripts", "/usr/lib/zabbix/externalscripts", "/var/lib/zabbix/enc", "/var/lib/zabbix/mibs", "/var/lib/zabbix/modules"]
 VOLUME ["/var/lib/zabbix/snmptraps", "/var/lib/zabbix/ssh_keys", "/var/lib/zabbix/ssl/certs", "/var/lib/zabbix/ssl/keys", "/var/lib/zabbix/ssl/ssl_ca"]
+VOLUME ["/etc/ssmtp"]
       
 COPY ["conf/etc/supervisor/", "/etc/supervisor/"]
 COPY ["docker-entrypoint.sh", "/usr/bin/"]
+COPY ["conf/etc/ssmtp/*","/etc/ssmtp/"]
+COPY ["tpl/alertscripts/*", "/usr/lib/zabbix/alertscripts/"]
+COPY ["tpl/externalscripts/*", "/usr/lib/zabbix/externalscripts/"]
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 
